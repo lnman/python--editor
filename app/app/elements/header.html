@@ -1,0 +1,60 @@
+<polymer-element name="app-header"  attributes="">
+  <template>
+    <style>
+      /* styles for the custom element itself - lowest specificity */
+      :host { display: block; }
+      /*
+      style if an ancestor has the different class
+      :host-context(.different) { }
+      */
+      .hidden{
+        display: none;
+      }
+    </style>
+    <core-toolbar class="medium-tall">
+      <core-menu-button icon="menu">
+        <template repeat="{{file}}">
+          <core-item on-click='{{file_click}}' data-arg="{{i}}">{{n}}</core-item>
+        </template>
+      </core-menu-button>
+      <div flex="">A Simple Python Code Editor</div>
+      <core-icon-button on-click="{{exit}}" icon="clear" title="clear"></core-icon-button>
+      <div class="bottom fit" horizontal="" layout="">
+        <paper-tabs selected="0" flex="" style="max-width: 100px;" role="tablist">
+          <paper-tab role="tab" class="core-selected" active="">New File</paper-tab>
+          <template id="tablist" repeat="{{ item in tabs }}">
+            <paper-tab role="tab">{{item}}</paper-tab>
+          </template>
+        </paper-tabs>
+        <core-icon-button icon="add" title="add"></core-icon-button>
+      </div>
+    </core-toolbar>
+    <div layout horizontal>
+      <app-directory></app-directory>
+      <app-tab id="open_file"></app-tab>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      ready: function() {
+        this.tabs=[];
+        this.file=[
+        {n:'Open File',i:0},
+        {n:'Reload File',i:1},
+        {n:'CLose File',i:2},
+        {n:'Save As',i:3},
+        {n:'Exit',i:4}];
+        this.open_file_name='';
+      },
+      exit:function () {
+       window.close();
+      },
+      file_click:function (event,detail,sender) {
+        var item=sender.attributes['data-arg'].value;
+        if(item==4){
+          this.exit();
+        }
+      }
+    });
+  </script>
+</polymer-element>

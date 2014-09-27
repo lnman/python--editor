@@ -1,0 +1,64 @@
+<polymer-element name="app-directory">
+  <template>
+    <style>
+      :host {  }
+      .hidden{
+        display: none;
+      }
+      .item{
+        color: green;
+      }
+      .item:hover{
+        color: blue;
+        font-style: italic;
+        cursor: pointer;
+      }
+      .directory{
+        width: 120px;
+        overflow:hidden;
+      }
+    </style>
+    <core-ajax id="parser"
+      url="http://localhost:8002/"
+      handle-as="json"
+      params='{"path":{{current_selection}}}'
+      on-core-response="{{handle_response}}"></core-ajax> 
+    <div class="directory" layout vertical>
+      <template repeat="{{name in file_listing}}">
+        <div class="item" on-click="{{fetch}}" data-arg="{{name}}">{{name}}</div>
+      </template>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      ready: function() {
+        this.cur=".";
+        this.file_listing=[];
+        this.current_selection='"'+this.cur+'"';
+        this.$.parser.go();
+        this.temp="";
+      },
+      fetch:function (event,detail,sender) {
+        this.temp=sender.attributes['data-arg'].value;
+        this.current_selection='"'+this.cur+this.temp+'"';
+        this.$.parser.go();
+      },
+      handle_response:function (event) {
+        var res=JSON.parse(event.detail.response);
+        if(res.error)return;
+        if(res.parse=="ok"){
+          res.data=unescape(res.data);
+          //console.log(res.data);
+          res.data=JSON.parse(res.data);
+          //console.log({"data":res.data});
+          this.fire("file_recieved",{"data":res.data});
+          return;
+        }
+        this.cur+=this.temp+"/";
+        this.file_listing=res;
+        this.file_listing.push("..");
+
+      }
+    });
+  </script>
+</polymer-element>

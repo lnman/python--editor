@@ -1,0 +1,182 @@
+<polymer-element name="app-tab">
+  <template>
+    <style>
+      /* styles for the custom element itself - lowest specificity */
+      :host {  }
+      /*
+      style if an ancestor has the different class
+      :host-context(.different) { }
+      */
+      .hidden{
+        display: none;
+      }
+      .str
+      {
+          color: #EC7600;
+      }
+      .kwd
+      {
+          color: #93C763;
+      }
+      .com
+      {
+          color: #66747B;
+      }
+      .typ
+      {
+          color: #678CB1;
+      }
+      .lit
+      {
+          color: #FACD22;
+      }
+      .pun
+      {
+          color: #F1F2F3;
+      }
+      .pln
+      {
+          color: #F1F2F3;
+      }
+      .tag
+      {
+          color: #8AC763;
+      }
+      .atn
+      {
+          color: #E0E2E4;
+      }
+      .atv
+      {
+          color: #EC7600;
+      }
+      .dec
+      {
+          color: purple;
+      }
+      .div_line{
+        min-width: 40px;
+        max-width: 40px;
+        text-align: right;
+        border-right: 4px rgb(5, 217, 206) solid;
+        color: rgb(168, 181, 193);
+        float: left;
+      }
+      .main{
+        background: #272822;
+      }
+      .generic{
+        min-width: 1024px;
+        max-width: 1024px;
+      }
+    </style>
+    <div class="main" layout horizontal>
+      <pre id="line_info">
+      </pre>
+      <div contentEditable=true class="generic" >
+        <pre id="code_here">
+        </pre>
+      </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      created: function() {
+        this.janina={"data":[{"keyword":"val"}]};
+        this.lines=1;
+        this.handle_response.bind(this);
+        document.addEventListener('file_recieved',this.handle_response);
+      },
+      no:function(ll){
+        var arr=[];
+        for (var i = 0; i < ll; i++) {
+          arr.push(i+1);
+        };
+        return arr;
+      },
+      ty:function () {
+        this.lines=1;
+        var words=this.janina.data;
+        var arr=[];
+        for(var i in words){
+          var elem=words[i];
+          //console.log(elem);
+          var cl='nothing';
+          if(elem.keyword){
+            arr.push({cls:"kwd",data:elem.keyword});
+          }
+          if(elem.string_lit||elem.byte_lit){
+            arr.push({cls:"str",data:this.string_parsing(elem.string_lit||elem.byte_lit)});
+          }
+          if(elem.comment){
+            arr.push({cls:"com",data:this.string_parsing(elem.comment)});
+          }
+          if(elem.bool||elem.none||elem.integer||elem.longinteger||elem.floatnumber||elem.imagnumber){
+            arr.push({cls:"typ",data:elem.bool||elem.none||elem.integer||elem.longinteger||elem.floatnumber||elem.imagnumber});
+          }
+          if(elem.identifier){
+            arr.push({cls:"lit",data:elem.identifier});
+          }
+          if(elem.punctuation){
+            arr.push({cls:"pun",data:elem.punctuation});
+          }
+          if(elem.esc_a||elem.esc_u){
+            arr.push({cls:"pln",data:elem.esc_a||elem.esc_u});
+          }
+          if(elem.operator){
+            arr.push({cls:"tag",data:elem.operator});
+          }
+          if(elem.grouping){
+            arr.push({cls:"atn",data:elem.grouping});
+          }
+          if(elem.ws){
+            var temp=elem.ws.split(" ");
+            for (var i = 0; i < temp.length; i++) {
+              if(temp[i]=="NL"){this.lines++;arr.push({cls:"",data:'\n'});}
+              else if(temp[i]=="SP")arr.push({cls:"",data:' '});
+              else if(temp[i]=="TB")arr.push({cls:"",data:'  '});
+            };
+            
+          }
+          
+        }
+        var rt="";
+        for (var i = 0; i < arr.length; i++) {
+          rt+="<span on-keydown='{{ input_handle }}' content='"+i+"' class="+"\""+arr[i].cls+"\">"+arr[i].data+"</span>";
+        };
+        this.$.code_here.innerHTML=rt;
+        var rt="";
+        for (var i = 0; i < this.lines; i++) {
+          rt+="<span class='div_line'>"+i+"</span>\n";
+        };
+        this.$.line_info.innerHTML=rt;
+        Platform.flush();
+      },
+      handle_response:function (event,detail,sender) {
+        event.srcElement.$.open_file.janina={"data":event.detail.data};
+        event.srcElement.$.open_file.ty();
+      },
+      string_parsing:function (data) {
+        var res="";
+        for(var i=0;i<data.length;i++){
+          if(data[i]==3&&data[i+1]==9&&data[i+2]=="_"){
+            res+="'";
+            i+=2;
+          }else if(data[i]==3&&data[i+1]==4&&data[i+2]=="_"){
+            res+='"';
+            i+=2;
+          }else{
+            res+=data[i];
+          }
+        }
+        return res;
+      },
+      input_handle:function(event){
+        console.log(event);
+      },
+      observe:{
+        '$.code_here':'input_handle'
+      }
+    });
+  </script>
+</polymer-element>
