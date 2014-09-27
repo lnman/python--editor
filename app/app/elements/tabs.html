@@ -1,12 +1,7 @@
 <polymer-element name="app-tab">
   <template>
     <style>
-      /* styles for the custom element itself - lowest specificity */
       :host {  }
-      /*
-      style if an ancestor has the different class
-      :host-context(.different) { }
-      */
       .hidden{
         display: none;
       }
@@ -173,9 +168,6 @@
       },
       input_handle:function(event){
         console.log(event);
-      },
-      observe:{
-        '$.code_here':'input_handle'
       }
     });
   </script>
